@@ -1,9 +1,9 @@
 # %%
-from PIL import Image, ImageDraw, ImageFont
-import matplotlib.font_manager as fm
-from matplotlib.pyplot import draw
-import numpy as np
 import cv2
+import matplotlib.font_manager as fm
+import numpy as np
+from matplotlib.pyplot import draw
+from PIL import Image, ImageDraw, ImageFont
 
 edge = 320
 font = fm.fontManager.ttflist[125]
@@ -12,10 +12,12 @@ TRANSPARENT = (255, 255, 255, 0)
 RGBA = 'RGBA'
 
 class Stamp:
-    def __init__(self, contents, size, font):
+    def __init__(self, contents, size, font, color='red', edge_width=6):
         self.contents = contents
         self.size = size
         self.font = font
+        self.color = color
+        self.edge_width = edge_width
         self.image = self._generate_stamp()
 
     def _generate_stamp(self):
@@ -26,7 +28,7 @@ class Stamp:
     def _character_to_image(self, character, font):
         image = Image.new(RGBA, (font.size, font.size), TRANSPARENT)
         draw = ImageDraw.Draw(image)
-        draw.text((0, 0), character, font=font, fill='red')
+        draw.text((0, 0), character, font=font, fill=self.color)
         image = self._crop(image)
         return image
     
@@ -71,16 +73,15 @@ class Stamp:
         array = cv2.circle(array, (x0, y0), y0, 255, thickness=-1)
         contours, hierarchy = cv2.findContours(array, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         (x1, y1), radius = cv2.minEnclosingCircle(contours[0])
-        return (x1, y1), radius
         return (x0, y1), radius
     #
     def _enclose(self, image):
         (x, y), radius = self._enclosing_circle(image)
         diameter = int(radius * 2)
         stamp = Image.new(RGBA, (diameter, diameter), TRANSPARENT)
-        stamp.paste(image, ((diameter - image.width) // 2, int(radius - y)))
+        stamp.paste(image, (int(radius - x), int(radius - y)))
         draw = ImageDraw.Draw(stamp)
-        draw.ellipse((0, 0, diameter, diameter), outline='red', width=6)
+        draw.ellipse((0, 0, diameter, diameter), outline=self.color, width=self.edge_width)
         return stamp
     
     def _trim_circle(self, image):
@@ -111,5 +112,12 @@ class Stamp:
         y_min, y_max = self._object_range(array, 1)
         return image.crop((x_min - 1, y_min - 1, x_max + 1, y_max + 1))
 
-stmp = Stamp('小堀', edge, font)
-stmp.image
+if __name__ == '__main__':
+    stmp = Stamp('小堀', edge, font)
+    display(stmp.image)
+    stmp = Stamp('堀堀', edge, font)
+    display(stmp.image)
+    stmp = Stamp('小小', edge, font)
+    display(stmp.image)
+
+# %%
