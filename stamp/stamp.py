@@ -45,7 +45,7 @@ class Stamp:
         draw.text((0, 0), character, font=font, fill=self.color)
         image = self._crop(image)
         return image
-    
+
     def _concat_chars(self, chars):
         height = sum([c.height for c in chars])
         width = max([c.width for c in chars])
@@ -56,7 +56,7 @@ class Stamp:
             image.paste(char, (x, y))
             y = char.height
         return image
-    
+
     def _string_to_image(self, string, font):
         char_images = []
         for char in string:
@@ -65,7 +65,7 @@ class Stamp:
         string_image = self._concat_chars(char_images)
         string_image = self._crop(string_image)
         return string_image
-    
+
     def _circle(self, image):
         # rescale
         edge = min(image.height, image.width)
@@ -100,7 +100,7 @@ class Stamp:
         draw = ImageDraw.Draw(stamp)
         draw.ellipse((margin, margin, diameter - margin, diameter - margin), outline=self.color, width=self.edge_width)
         return stamp
-    
+
     def _trim_circle(self, image, margin):
         disk_mask = Image.new(RGBA, (image.width, image.height), TRANSPARENT)
         mask_draw = ImageDraw.Draw(disk_mask)
@@ -128,19 +128,3 @@ class Stamp:
     def _threshold(self, image):
         thres = (image.max() - image.min()) // 2
         return cv2.threshold(image, thres, 255, cv2.THRESH_BINARY)
-
-if __name__ == '__main__':
-    import numpy as np
-    import matplotlib.pylab as plt
-
-    stmp = Stamp('小堀', font)
-    display(stmp.image)
-    stmp = Stamp('堀堀', font)
-    display(stmp.image)
-    stmp = Stamp('小小', font)
-    display(stmp.image)
-
-    plt.imshow(np.array(stmp.image)[:, :, :-1])
-    plt.show()
-
-# %%
